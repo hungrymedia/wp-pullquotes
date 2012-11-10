@@ -12,11 +12,6 @@ License: MIT
 
 class HMPullQuote{
 
-
-/*	function register(){
-		register_activation_hook( __FILE__, array('HMPullQuote', 'init') );
-	}
-*/
 	function init(){
 	  $labels = array(
 	    'name' => _x('Pull Quotes', 'post type general name', 'your_text_domain'),
@@ -47,13 +42,21 @@ class HMPullQuote{
 	}
 
 	function render_admin_ui(){
-
+		?>
+		<script>
+		jQuery('#postexcerpt h3 span').html('Link to:');
+		jQuery('#edit-slug-box').hide();
+		jQuery('#postexcerpt .inside p').hide();
+		jQuery('#revisionsdiv').addClass('closed');
+		</script>
+		<?php
 	}
 
 
 }
 
 add_action( 'init', array('HMPullQuote', 'init') );
+add_action( 'edit_form_advanced', array('HMPullQuote', 'render_admin_ui') );
 
 
 ?>
