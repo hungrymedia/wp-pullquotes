@@ -13,10 +13,10 @@ License: MIT
 class HMPullQuote{
 
 
-	function register(){
+/*	function register(){
 		register_activation_hook( __FILE__, array('HMPullQuote', 'init') );
 	}
-
+*/
 	function init(){
 	  $labels = array(
 	    'name' => _x('Pull Quotes', 'post type general name', 'your_text_domain'),
