@@ -51,6 +51,25 @@ class HMPullQuote{
 		<?php
 	}
 
+	function front_scripts(){
+		wp_enqueue_script('jquery');
+	}
+
+	function type_quote(){
+		?>
+		<script>
+		quote_text = jQuery('#hm-pullquote a').html();
+		jQuery('#hm-pullquote a').empty();
+		quote_chr = 0;
+		quote_int = setInterval( function(){
+			jQuery('#hm-pullquote a').append(quote_text.charAt(quote_chr));
+			quote_chr++;
+			if( quote_chr >= quote_text.length){ clearInterval(quote_int); }
+		}, 100);
+		</script>
+		<?php
+	}
+
 	function get_quote(){
 		$quotes = get_posts(
 			array(
@@ -100,6 +119,8 @@ class HMPullQuotewidget extends WP_Widget {
 }
 
 add_action( 'init', array('HMPullQuote', 'init') );
+add_action( 'wp_enqueue_scripts', array('HMPullQuote', 'front_scripts') );
+add_action( 'wp_footer', array('HMPullQuote', 'type_quote') );
 add_action( 'edit_form_advanced', array('HMPullQuote', 'render_admin_ui') );
 add_action( 'widgets_init', create_function( '', 'register_widget( "HMPullQuotewidget" );' ) );
 
