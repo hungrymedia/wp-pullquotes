@@ -38,7 +38,6 @@ class HMPullQuote{
 	  );
 
 		$registered = register_post_type( 'hm_pull_quote' , $args );
-		error_log($registered);
 	}
 
 	function render_admin_ui(){
@@ -52,11 +51,56 @@ class HMPullQuote{
 		<?php
 	}
 
+	function get_quote(){
+		$quotes = get_posts(
+			array(
+				'post_type' => 'hm_pull_quote'
+			)
+		);
+		$rand = floor(mt_rand(0, count($quotes)-1));
+		return $quotes[$rand];
+	}
+
+}
+
+class HMPullQuotewidget extends WP_Widget {
+
+	public function __construct() {
+		parent::__construct(
+	 		'hm_pull_quote_widget', // Base ID
+			'Pull Quote Widget', // Name
+			array( 'description' => __( 'Show a random pull quote', 'text_domain' ), ) // Args
+		);
+	}
+
+ 	public function form( $instance ) {
+		// outputs the options form on admin
+	}
+
+	public function update( $new_instance, $old_instance ) {
+		// processes widget options to be saved
+	}
+
+	public function widget( $args, $instance ) {
+		extract( $args );
+		$title = apply_filters( 'widget_title', $instance['title'] );
+
+		echo $before_widget;
+		if ( ! empty( $title ) )
+			echo $before_title . $title . $after_title;
+		$quote = HMPullQuote::get_quote();
+		?>
+		<div id="hm-pullquote">
+			<a href="<?php echo $quote->post_excerpt ?>"><?php echo $quote->post_title ?></a>
+		</div>
+		<?php
+		echo $after_widget;
+	}
 
 }
 
 add_action( 'init', array('HMPullQuote', 'init') );
 add_action( 'edit_form_advanced', array('HMPullQuote', 'render_admin_ui') );
-
+add_action( 'widgets_init', create_function( '', 'register_widget( "HMPullQuotewidget" );' ) );
 
 ?>
