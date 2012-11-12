@@ -163,6 +163,8 @@ class HMPullQuotewidget extends WP_Widget {
 		<div id="hm-pullquote" data-speed="<?php echo $speed; ?>"><?php echo $output; ?></div>
 		<?php
 		echo $after_widget;
+		$impressions = isset($custom['impressions'][0]) ? $custom['impressions'][0] : 0;
+		update_post_meta($quote->ID, 'impressions', $impressions+1, $custom['impressions'][0]);
 	}
 
 }
