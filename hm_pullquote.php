@@ -58,6 +58,8 @@ class HMPullQuote{
 	function type_quote(){
 		?>
 		<script>
+		type_speed = jQuery('#hm-pullquote').data('speed');
+		console.log(type_speed);
 		quote_text = jQuery('#hm-pullquote a').html();
 		jQuery('#hm-pullquote a').empty();
 		quote_chr = 0;
@@ -65,12 +67,13 @@ class HMPullQuote{
 			jQuery('#hm-pullquote a').append(quote_text.charAt(quote_chr));
 			quote_chr++;
 			if( quote_chr >= quote_text.length){ clearInterval(quote_int); }
-		}, 100);
+		}, type_speed);
 		</script>
 		<?php
 	}
 
 	function get_quote(){
+		$this->type_speed = $speed;
 		$quotes = get_posts(
 			array(
 				'post_type' => 'hm_pull_quote'
@@ -93,11 +96,21 @@ class HMPullQuotewidget extends WP_Widget {
 	}
 
  	public function form( $instance ) {
-		// outputs the options form on admin
+ 		$speed = 100;
+ 		if( isset( $instance['speed'] ) ){
+ 			$speed = $instance['speed'];
+ 		}
+ 		?>
+		<label for="<?php echo $this->get_field_id( 'speed' ); ?>"><?php _e( 'Typing Speed:' ); ?></label> 
+		<input class="widefat" id="<?php echo $this->get_field_id( 'speed' ); ?>" name="<?php echo $this->get_field_name( 'speed' ); ?>" type="number" value="<?php echo esc_attr( $speed ); ?>" min="10" max="1000" step="10"/>
+		</p>
+		<?php
 	}
 
 	public function update( $new_instance, $old_instance ) {
-		// processes widget options to be saved
+		$instance = array();
+		$instance['speed'] = intval($new_instance['speed']);
+		return $instance;
 	}
 
 	public function widget( $args, $instance ) {
@@ -105,11 +118,10 @@ class HMPullQuotewidget extends WP_Widget {
 		$title = apply_filters( 'widget_title', $instance['title'] );
 
 		echo $before_widget;
-		if ( ! empty( $title ) )
-			echo $before_title . $title . $after_title;
+		$speed = isset($instance['speed']) ? $instance['speed'] : 100;
 		$quote = HMPullQuote::get_quote();
 		?>
-		<div id="hm-pullquote">
+		<div id="hm-pullquote" data-speed="<?php echo $speed; ?>">
 			<a href="<?php echo $quote->post_excerpt ?>"><?php echo $quote->post_title ?></a>
 		</div>
 		<?php
