@@ -34,7 +34,7 @@ class HMPullQuote{
 			'public' => true,
 			'show_ui' => true,
 			'menu_position' => 5,
-			'supports' => array('title', 'excerpt', 'revisions')
+			'supports' => array('title', 'revisions', 'custom_fields')
 	  );
 
 		$registered = register_post_type( 'hm_pull_quote' , $args );
@@ -43,9 +43,11 @@ class HMPullQuote{
 	function render_admin_ui(){
 		?>
 		<script>
+		jQuery('#titlewrap label').html('Enter quote here');
 		jQuery('#postexcerpt h3 span').html('Link to:');
 		jQuery('#edit-slug-box').hide();
-		jQuery('#postexcerpt .inside p').hide();
+		var excerpt = jQuery('#postexcerpt textarea').text();
+		jQuery('#postexcerpt .inside').empty().html('<input size="30" name="excerpt" value="'+excerpt+'" />');
 		jQuery('#revisionsdiv').addClass('closed');
 		</script>
 		<?php
@@ -81,6 +83,38 @@ class HMPullQuote{
 		);
 		$rand = floor(mt_rand(0, count($quotes)-1));
 		return $quotes[$rand];
+	}
+
+	function hm_weight(){
+	  global $post;
+	  $custom = get_post_custom($post->ID);
+	  $weight = isset($custom["weight"][0]) ? $custom["weight"][0] : 5;
+	  $impressions = isset($custom["impressions"][0]) ? $custom["impressions"][0] : 0;
+	  $link_to = isset($custom["link_to"][0]) ? $custom["link_to"][0] : '';
+	  ?>
+	  <p><label>Link to:</label>
+	  <input type="text" name="link_to" value="<?php echo $link_to; ?>" /></p>
+	  <p><label>Display Weighting:</label>
+	  <input type="number" name="weight" value="<?php echo $weight; ?>" min="1", max="10" /></p>
+	  <p>Impressions: <?php echo $impressions; ?></p>
+	  <?php
+	}
+
+	function hm_weight_admin_init(){
+  	add_meta_box(
+  		"hm_pullquote-meta", 
+  		"Options", 
+  		array('HMPullQuote','hm_weight'), 
+  		"hm_pull_quote", 
+  		"side", 
+  		"high"
+  	);
+	}
+
+	function custom_admin_save(){
+		global $post;
+		update_post_meta($post->ID, "weight", $_POST["weight"]);	// LOCATION
+		update_post_meta($post->ID, "link_to", $_POST["link_to"]);		// LINK
 	}
 
 }
@@ -120,20 +154,29 @@ class HMPullQuotewidget extends WP_Widget {
 		echo $before_widget;
 		$speed = isset($instance['speed']) ? $instance['speed'] : 100;
 		$quote = HMPullQuote::get_quote();
+		$custom = get_post_custom($quote->ID);
+		$output = $quote->post_title;
+		if( !empty( $custom['link_to'][0] ) ){
+			$output = '<a href="' . $custom['link_to'][0] . '">' . $output . '</a>';
+		}
 		?>
-		<div id="hm-pullquote" data-speed="<?php echo $speed; ?>">
-			<a href="<?php echo $quote->post_excerpt ?>"><?php echo $quote->post_title ?></a>
-		</div>
+		<div id="hm-pullquote" data-speed="<?php echo $speed; ?>"><?php echo $output; ?></div>
 		<?php
 		echo $after_widget;
 	}
 
 }
 
+
 add_action( 'init', array('HMPullQuote', 'init') );
 add_action( 'wp_enqueue_scripts', array('HMPullQuote', 'front_scripts') );
 add_action( 'wp_footer', array('HMPullQuote', 'type_quote') );
 add_action( 'edit_form_advanced', array('HMPullQuote', 'render_admin_ui') );
 add_action( 'widgets_init', create_function( '', 'register_widget( "HMPullQuotewidget" );' ) );
+add_action( 'admin_init', array('HMPullQuote', 'hm_weight_admin_init') );
+add_action( 'save_post', array('HMPullQuote','custom_admin_save') );
+
+ 
+
 
 ?>
