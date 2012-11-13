@@ -36,8 +36,24 @@ class HMPullQuote{
 			'menu_position' => 5,
 			'supports' => array('title', 'revisions', 'custom_fields')
 	  );
-
+		add_option('HMPullQuote_max_weight', 0);
 		$registered = register_post_type( 'hm_pull_quote' , $args );
+	}
+
+	function set_max_weight(){
+		$max = 0;
+		$quotes = get_posts(
+			array(
+				'post_type' => 'hm_pull_quote'
+			)
+		);
+		foreach( $quotes as $quote ){
+			$custom = get_post_custom($quote->ID);
+			if( $custom["weight"][0]  > $max ){
+				$max = $custom["weight"][0];
+			}
+		}
+		update_option( 'HMPullQuote_max_weight', $max );
 	}
 
 	function render_admin_ui(){
@@ -80,13 +96,21 @@ class HMPullQuote{
 
 	function get_quote(){
 		$this->type_speed = $speed;
+		$bias = rand(0, get_option( 'HMPullQuote_max_weight', 10 ) );
 		$quotes = get_posts(
 			array(
 				'post_type' => 'hm_pull_quote'
 			)
 		);
-		$rand = floor(mt_rand(0, count($quotes)-1));
-		return $quotes[$rand];
+		$weighted_quotes = array();
+		foreach( $quotes as $quote ){
+			$custom = get_post_custom($quote->ID);
+			if( $custom["weight"][0]  >= $bias ){
+				array_push($weighted_quotes, $quote);
+			}
+		}
+		$rand = floor(rand(0, count($weighted_quotes)-1));
+		return $weighted_quotes[$rand];
 	}
 
 	function hm_weight(){
@@ -117,8 +141,9 @@ class HMPullQuote{
 
 	function custom_admin_save(){
 		global $post;
-		update_post_meta($post->ID, "weight", $_POST["weight"]);	// LOCATION
-		update_post_meta($post->ID, "link_to", $_POST["link_to"]);		// LINK
+		update_post_meta($post->ID, "weight", $_POST["weight"]);
+		update_post_meta($post->ID, "link_to", $_POST["link_to"]);
+		HMPullQuote::set_max_weight();
 	}
 
 }
