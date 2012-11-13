@@ -61,12 +61,16 @@ class HMPullQuote{
 		?>
 		<script>
 		type_speed = jQuery('#hm-pullquote').data('speed');
-		console.log(type_speed);
-		quote_text = jQuery('#hm-pullquote a').html();
-		jQuery('#hm-pullquote a').empty();
+		if(jQuery('#hm-pullquote a').length > 0){
+			var el = jQuery('#hm-pullquote a');
+		}else{
+			var el = jQuery('#hm-pullquote');
+		}
+		quote_text = jQuery(el).html();
+		jQuery(el).empty();
 		quote_chr = 0;
 		quote_int = setInterval( function(){
-			jQuery('#hm-pullquote a').append(quote_text.charAt(quote_chr));
+			jQuery(el).append(quote_text.charAt(quote_chr));
 			quote_chr++;
 			if( quote_chr >= quote_text.length){ clearInterval(quote_int); }
 		}, type_speed);
