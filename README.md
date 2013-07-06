@@ -8,4 +8,5 @@ Not sure what all this github stuff is? Have a look at [the easy instructions](h
 license
 =======
 
-http://wph.mit-license.org/2011
+http://wph.mit-license.org/2012
+
